@@ -52,7 +52,8 @@
     height: 64px;
     display: flex; align-items: center; justify-content: space-between;
   }
-  .header h1 { font-size: 18px; font-weight: 700; color: var(--gray-900); }
+  .header h1 { font-size: 18px; font-weight: 700; color: var(--gray-900); cursor: pointer; }
+  .header h1:hover { opacity: .8; }
   .header h1 span { color: var(--primary); }
   .header-meta { font-size: 12px; color: var(--gray-500); }
 
@@ -393,16 +394,25 @@
     50% { box-shadow: 0 0 0 8px rgba(37,99,235,0); }
   }
 
-  /* ── Preset Chips ── */
-  .sim-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; min-height: 34px; }
-  .sim-preset-btn {
-    padding: 5px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600;
-    border: 1.5px solid var(--gray-300); background: #fff; color: var(--gray-700);
-    cursor: pointer; transition: all .15s; font-family: inherit;
+  /* ── Network/Token Selector ── */
+  .sim-selector-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; align-items: center; }
+  .sim-selector-group { display: flex; align-items: center; gap: 6px; }
+  .sim-selector-label { font-size: 12px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+  .sim-select {
+    padding: 7px 32px 7px 12px; border: 1.5px solid var(--gray-300); border-radius: 8px;
+    font-size: 13px; font-weight: 600; color: var(--gray-800); background: #fff;
+    cursor: pointer; font-family: inherit; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+    transition: border-color .15s;
   }
-  .sim-preset-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
-  .sim-preset-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
-  .sim-presets-label { font-size: 11px; font-weight: 700; color: var(--gray-500); letter-spacing: .05em; text-transform: uppercase; align-self: center; margin-right: 4px; }
+  .sim-select:hover { border-color: var(--primary); }
+  .sim-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+  .sim-selected-info {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px; background: var(--primary-light); border-radius: 8px;
+    font-size: 12px; font-weight: 600; color: var(--primary-dark);
+  }
 
   /* Mobile sim */
   @media (max-width: 900px) {
@@ -415,7 +425,7 @@
 
 <!-- Header -->
 <header class="header">
-  <h1>🔗 <span>StableCoin BC</span> Adapter</h1>
+  <h1 onclick="switchView('docs'); window.scrollTo({top:0})" title="홈으로 이동">🔗 <span>StableCoin BC</span> Adapter</h1>
   <div class="header-tabs">
     <button class="header-tab active" onclick="switchView('docs')">📄 기능 설명서</button>
     <button class="header-tab" onclick="switchView('sim')">🧪 데이터 발생기</button>
@@ -1499,7 +1509,17 @@
       <div class="sim-title" id="simTitle">🆕 계정 생성 시뮬레이션</div>
       <div class="sim-subtitle" id="simSubtitle">Kafka 메시지 수신부터 응답 발행까지의 데이터 흐름을 단계별로 시뮬레이션합니다</div>
     </div>
-    <div class="sim-presets" id="simPresets"><span class="sim-presets-label">테스트 케이스</span></div>
+    <div class="sim-selector-row" id="simSelectors">
+      <div class="sim-selector-group">
+        <span class="sim-selector-label">네트워크</span>
+        <select class="sim-select" id="selNetwork" onchange="onSelectorChange()"></select>
+      </div>
+      <div class="sim-selector-group">
+        <span class="sim-selector-label">토큰 유형</span>
+        <select class="sim-select" id="selToken" onchange="onSelectorChange()"></select>
+      </div>
+      <div class="sim-selected-info" id="selInfo"></div>
+    </div>
     <div class="sim-controls">
       <button class="sim-btn sim-btn-run" id="simRunBtn" onclick="runSimulation()">▶ 실행</button>
       <button class="sim-btn sim-btn-reset" onclick="resetSimulation()">↺ 초기화</button>
@@ -1549,7 +1569,6 @@ window.addEventListener('scroll', () => {
 // ─── State ───
 let simRunning = false;
 let currentScenario = null;
-let currentPreset = null;
 let currentSteps = [];
 
 // ─── Helpers ───
@@ -1587,55 +1606,54 @@ function stepHtml(step) {
     </div>`;
 }
 
-// ─── Preset Definitions ───
-const PRESETS = {
-  'eth-usdc': {
-    label:'이더리움 USDC', icon:'🔷',
-    chainId:'1', chainName:'Ethereum', chainSymbol:'ETH',
-    isNative:false, symbol:'USDC',
-    tokenAddress:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-    decimals:6, amount:'500000', display:'0.5 USDC',
-    blockNumber:19800500, rpcUrl:'https://mainnet.infura.io/v3/...',
-  },
-  'eth-native': {
-    label:'이더리움 ETH (Native)', icon:'⬡',
-    chainId:'1', chainName:'Ethereum', chainSymbol:'ETH',
-    isNative:true, symbol:'ETH', tokenAddress:null,
-    decimals:18, amount:'100000000000000000', display:'0.1 ETH',
-    blockNumber:19800500, rpcUrl:'https://mainnet.infura.io/v3/...',
-  },
-  'avax-native': {
-    label:'아발란체 AVAX (Native)', icon:'🔺',
-    chainId:'43114', chainName:'Avalanche C-Chain', chainSymbol:'AVAX',
-    isNative:true, symbol:'AVAX', tokenAddress:null,
-    decimals:18, amount:'2000000000000000000', display:'2 AVAX',
-    blockNumber:42100000, rpcUrl:'https://api.avax.network/ext/bc/C/rpc',
-  },
-  'fuji-usdc': {
-    label:'FUJI USDC (테스트넷)', icon:'🧪',
-    chainId:'43113', chainName:'Avalanche FUJI', chainSymbol:'AVAX',
-    isNative:false, symbol:'USDC',
-    tokenAddress:'0x5425890298aed601595a70AB815c96711a31Bc65',
-    decimals:6, amount:'100000', display:'0.1 USDC',
-    blockNumber:28450000, rpcUrl:'https://api.avax-test.network/ext/bc/C/rpc',
-  },
-  'polygon-usdt': {
-    label:'폴리곤 USDT', icon:'🟣',
-    chainId:'137', chainName:'Polygon', chainSymbol:'MATIC',
-    isNative:false, symbol:'USDT',
-    tokenAddress:'0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
-    decimals:6, amount:'1000000', display:'1 USDT',
-    blockNumber:56000000, rpcUrl:'https://polygon-rpc.com',
-  },
-  'kcp-krw': {
-    label:'KCP KRW (결제)', icon:'🏦',
-    chainId:'8888', chainName:'KCP', chainSymbol:'KRW',
-    isNative:false, symbol:'KRW',
-    tokenAddress:'0xKRW0Token234567890abcdef1234567890abcdef',
-    decimals:0, amount:'10000', display:'10,000 KRW',
-    blockNumber:1000000, rpcUrl:'https://rpc.kcp.network',
-  },
+// ─── Network & Token Data ───
+const NETWORKS = {
+  'K-Mainnet':  { chainId:'8888', chainSymbol:'KRW', icon:'🇰🇷', blockNumber:1000000, rpcUrl:'https://rpc.kcp.network' },
+  'Ethereum':   { chainId:'1', chainSymbol:'ETH', icon:'🔷', blockNumber:19800500, rpcUrl:'https://mainnet.infura.io/v3/...' },
+  'Avalanche':  { chainId:'43114', chainSymbol:'AVAX', icon:'🔺', blockNumber:42100000, rpcUrl:'https://api.avax.network/ext/bc/C/rpc' },
+  'FUJI':       { chainId:'43113', chainSymbol:'AVAX', icon:'🧪', blockNumber:28450000, rpcUrl:'https://api.avax-test.network/ext/bc/C/rpc' },
+  'Polygon':    { chainId:'137', chainSymbol:'MATIC', icon:'🟣', blockNumber:56000000, rpcUrl:'https://polygon-rpc.com' },
 };
+
+const TOKENS = {
+  'Native': (net) => ({
+    symbol: NETWORKS[net].chainSymbol,
+    isNative: true, tokenAddress: null,
+    decimals: net==='K-Mainnet' ? 0 : 18,
+    amount:   net==='K-Mainnet' ? '10000' : '100000000000000000',
+    display:  net==='K-Mainnet' ? '10,000 KRW' : `0.1 ${NETWORKS[net].chainSymbol}`,
+  }),
+  'USDC': (net) => ({
+    symbol:'USDC', isNative:false, decimals:6, amount:'500000', display:'0.5 USDC',
+    tokenAddress: {
+      'K-Mainnet':'0xKRWToken234567890abcdef1234567890abcdef00',
+      'Ethereum':'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      'Avalanche':'0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
+      'FUJI':'0x5425890298aed601595a70AB815c96711a31Bc65',
+      'Polygon':'0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+    }[net] || addr(),
+  }),
+  'USDT': (net) => ({
+    symbol:'USDT', isNative:false, decimals:6, amount:'1000000', display:'1 USDT',
+    tokenAddress: {
+      'K-Mainnet':'0xKRWUSDT34567890abcdef1234567890abcdef00',
+      'Ethereum':'0xdAC17F958D2ee523a2206206994597C13D831ec7',
+      'Avalanche':'0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7',
+      'FUJI':'0x134Dc38AE8C853D1aa2103d5047591acDAa16682',
+      'Polygon':'0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+    }[net] || addr(),
+  }),
+};
+
+function buildPreset(network, token) {
+  const net = NETWORKS[network];
+  const tok = TOKENS[token](network);
+  return {
+    chainId: net.chainId, chainName: network, chainSymbol: net.chainSymbol,
+    icon: net.icon, blockNumber: net.blockNumber, rpcUrl: net.rpcUrl,
+    ...tok,
+  };
+}
 
 const HOT_WALLET   = '0xHotWallet1234567890aBcDeF12345678AbCDeF99';
 const SETTLE_ADDR  = '0xSettlement234567890abcdef12345678abcDef00';
@@ -1647,8 +1665,8 @@ const SCENARIOS = {
   'account-create': {
     title: (p) => `🆕 계정 생성 시뮬레이션`,
     subtitle: (p) => `CREATE2로 ${p.chainName}(${p.chainId}) 결정론적 주소를 계산합니다`,
-    presets: ['fuji-usdc','eth-usdc','avax-native','polygon-usdt'],
-    defaultPreset: 'fuji-usdc',
+    networks: ['FUJI','Ethereum','Avalanche','K-Mainnet','Polygon'], tokens: ['USDC','USDT','Native'],
+    defaultNetwork: 'FUJI', defaultToken: 'USDC',
     steps: (p) => {
       const rid=uuid(), addr_=addr();
       return [
@@ -1678,8 +1696,8 @@ const SCENARIOS = {
   'account-deploy': {
     title: (p) => `🚀 계정 배포 시뮬레이션`,
     subtitle: (p) => `${p.chainName}(${p.chainId})에 CREATE2 프록시 스마트 계정을 배포합니다`,
-    presets: ['fuji-usdc','eth-usdc','avax-native','polygon-usdt'],
-    defaultPreset: 'fuji-usdc',
+    networks: ['FUJI','Ethereum','Avalanche','K-Mainnet','Polygon'], tokens: ['USDC','USDT','Native'],
+    defaultNetwork: 'FUJI', defaultToken: 'USDC',
     steps: (p) => {
       const rid=uuid(), a=addr(), tx=txHash();
       return [
@@ -1718,8 +1736,8 @@ const SCENARIOS = {
   'account-delete': {
     title: () => '🗑️ 계정 삭제 시뮬레이션',
     subtitle: () => 'SQLite 계정 레코드 삭제 (NoReply 패턴 — 온체인 작업 없음)',
-    presets: [],
-    defaultPreset: null,
+    networks: [], tokens: [],
+    defaultNetwork: null, defaultToken: null,
     steps: () => {
       const rid=uuid(), a=addr();
       return [
@@ -1740,8 +1758,8 @@ const SCENARIOS = {
   'deposit': {
     title: (p) => `💰 입금 감지 시뮬레이션`,
     subtitle: (p) => `${p.chainName} ${p.symbol} ${p.isNative?'(Native)':'(ERC-20)'} 입금 이벤트 처리`,
-    presets: ['eth-usdc','eth-native','avax-native','fuji-usdc','polygon-usdt'],
-    defaultPreset: 'fuji-usdc',
+    networks: ['FUJI','Ethereum','Avalanche','K-Mainnet','Polygon'], tokens: ['USDC','USDT','Native'],
+    defaultNetwork: 'FUJI', defaultToken: 'USDC',
     steps: (p) => {
       const tx=txHash(), from=addr(), to=addr();
       return [
@@ -1779,8 +1797,8 @@ const SCENARIOS = {
     subtitle: (p) => p.isNative
       ? `${p.chainName} ${p.symbol} Native 코인 전송 → sendNativeTransfer`
       : `${p.chainName} ${p.symbol} ERC-20 토큰 전송 → sendErc20Transfer`,
-    presets: ['fuji-usdc','eth-usdc','eth-native','avax-native','polygon-usdt'],
-    defaultPreset: 'fuji-usdc',
+    networks: ['FUJI','Ethereum','Avalanche','K-Mainnet','Polygon'], tokens: ['USDC','USDT','Native'],
+    defaultNetwork: 'FUJI', defaultToken: 'USDC',
     steps: (p) => {
       const rid=uuid(), sender=addr(), receiver=addr(), tx=txHash();
       const gasUsed = p.isNative ? '21000' : '65000';
@@ -1824,8 +1842,8 @@ const SCENARIOS = {
   'withdraw-fail': {
     title: (p) => `📤 출금 (Nonce 충돌 재시도)`,
     subtitle: (p) => `${p.chainName} ${p.symbol} — Bundler Nonce 충돌 발생 시 1회 자동 재시도`,
-    presets: ['fuji-usdc','eth-usdc','avax-native','polygon-usdt'],
-    defaultPreset: 'fuji-usdc',
+    networks: ['FUJI','Ethereum','Avalanche','K-Mainnet','Polygon'], tokens: ['USDC','USDT','Native'],
+    defaultNetwork: 'FUJI', defaultToken: 'USDC',
     steps: (p) => {
       const rid=uuid(), sender=addr(), tx=txHash();
       return [
@@ -1861,8 +1879,8 @@ const SCENARIOS = {
   'payment': {
     title: (p) => `💳 결제 시뮬레이션`,
     subtitle: (p) => `HotWallet → Settlement 주소로 ${p.symbol} 전송 (${p.chainName} 결제 체인)`,
-    presets: ['kcp-krw','eth-usdc','fuji-usdc'],
-    defaultPreset: 'kcp-krw',
+    networks: ['K-Mainnet','Ethereum','FUJI','Avalanche','Polygon'], tokens: ['Native','USDC','USDT'],
+    defaultNetwork: 'K-Mainnet', defaultToken: 'Native',
     steps: (p) => {
       const rid=uuid(), tx=txHash();
       return [
@@ -1895,8 +1913,8 @@ const SCENARIOS = {
   'confirm': {
     title: (p) => `✅ 컨펌 조회 시뮬레이션`,
     subtitle: (p) => `${p.chainName} 트랜잭션 컨펌 수 계산 및 TXCF/TXPD 판정`,
-    presets: ['fuji-usdc','eth-usdc','avax-native','polygon-usdt'],
-    defaultPreset: 'fuji-usdc',
+    networks: ['FUJI','Ethereum','Avalanche','K-Mainnet','Polygon'], tokens: ['USDC','USDT','Native'],
+    defaultNetwork: 'FUJI', defaultToken: 'USDC',
     steps: (p) => {
       const rid=uuid(), tx=txHash(), rb=p.blockNumber, lb=rb+7;
       return [
@@ -1926,8 +1944,8 @@ const SCENARIOS = {
   'balance': {
     title: (p) => `💎 잔액 조회 시뮬레이션`,
     subtitle: (p) => `${p.chainName} ${p.chainSymbol}(Native) + ${p.symbol}(ERC-20) 병렬 조회`,
-    presets: ['fuji-usdc','eth-usdc','avax-native','polygon-usdt'],
-    defaultPreset: 'fuji-usdc',
+    networks: ['FUJI','Ethereum','Avalanche','K-Mainnet','Polygon'], tokens: ['USDC','USDT','Native'],
+    defaultNetwork: 'FUJI', defaultToken: 'USDC',
     steps: (p) => {
       const rid=uuid(), a=addr();
       const nativeResult = p.symbol==='KRW' ? '(제외됨)' : '2300000000000000000';
@@ -1962,8 +1980,8 @@ const SCENARIOS = {
   'settlement': {
     title: (p) => `🏦 정산 시뮬레이션 (EOFS Split)`,
     subtitle: (p) => `${p.chainName} ${p.symbol} — EOFS Split 가맹점+수수료 동시 분배`,
-    presets: ['fuji-usdc','eth-usdc','polygon-usdt'],
-    defaultPreset: 'fuji-usdc',
+    networks: ['FUJI','Ethereum','Avalanche','Polygon'], tokens: ['USDC','USDT'],
+    defaultNetwork: 'FUJI', defaultToken: 'USDC',
     steps: (p) => {
       const rid=uuid(), merchant=addr(), tx=txHash();
       const mAmt=Math.floor(Number(p.amount)*0.9).toString();
@@ -1998,8 +2016,8 @@ const SCENARIOS = {
   'settlement-collect': {
     title: (p) => `📥 정산 집금 시뮬레이션`,
     subtitle: (p) => `외부 주소 → HotWallet으로 ${p.symbol} 회수 (${p.chainName})`,
-    presets: ['fuji-usdc','eth-usdc','polygon-usdt'],
-    defaultPreset: 'fuji-usdc',
+    networks: ['FUJI','Ethereum','Avalanche','Polygon'], tokens: ['USDC','USDT'],
+    defaultNetwork: 'FUJI', defaultToken: 'USDC',
     steps: (p) => {
       const rid=uuid(), from=addr(), tx=txHash();
       return [
@@ -2029,8 +2047,8 @@ const SCENARIOS = {
   'collection': {
     title: (p) => `🗂️ 집금 시뮬레이션`,
     subtitle: (p) => `입금 감지 후 ${p.chainName} ${p.symbol} 토큰을 HotWallet로 자동 집금`,
-    presets: ['fuji-usdc','eth-usdc','avax-native','polygon-usdt'],
-    defaultPreset: 'fuji-usdc',
+    networks: ['FUJI','Ethereum','Avalanche','K-Mainnet','Polygon'], tokens: ['USDC','USDT','Native'],
+    defaultNetwork: 'FUJI', defaultToken: 'USDC',
     steps: (p) => {
       const a=addr(), tx=txHash();
       return [
@@ -2062,8 +2080,8 @@ const SCENARIOS = {
   'config-register': {
     title: (p) => `⚙️ 설정 등록 시뮬레이션`,
     subtitle: (p) => `${p.chainName}(${p.chainId}) + ${p.symbol} 설정을 RPC 자동 조회 후 DB 저장`,
-    presets: ['fuji-usdc','eth-usdc','avax-native','polygon-usdt'],
-    defaultPreset: 'fuji-usdc',
+    networks: ['FUJI','Ethereum','Avalanche','K-Mainnet','Polygon'], tokens: ['USDC','USDT','Native'],
+    defaultNetwork: 'FUJI', defaultToken: 'USDC',
     steps: (p) => {
       return [
         {id:1,tag:'kafka',label:'Kafka 메시지 수신 (NoReply)',dur:'<1ms',
@@ -2096,8 +2114,8 @@ const SCENARIOS = {
   'reconciliation': {
     title: (p) => `📊 대사 시뮬레이션`,
     subtitle: (p) => `${p.chainName} 특정 시점 온체인 잔액 집계 (별도 Worker)`,
-    presets: ['fuji-usdc','eth-usdc','polygon-usdt'],
-    defaultPreset: 'fuji-usdc',
+    networks: ['FUJI','Ethereum','Avalanche','Polygon'], tokens: ['USDC','USDT'],
+    defaultNetwork: 'FUJI', defaultToken: 'USDC',
     steps: (p) => {
       const rid=uuid(), baseBlock=p.blockNumber-1000;
       return [
@@ -2126,26 +2144,69 @@ const SCENARIOS = {
 };
 
 // ─── UI Functions ───
-function renderPresets(presets, activeKey) {
-  const el = document.getElementById('simPresets');
-  if (!presets || presets.length === 0) {
-    el.innerHTML = '';
+function renderSelectors(sc) {
+  const selRow = document.getElementById('simSelectors');
+  const selNet = document.getElementById('selNetwork');
+  const selTok = document.getElementById('selToken');
+  const selInfo = document.getElementById('selInfo');
+
+  if (!sc.networks || sc.networks.length === 0) {
+    selRow.style.display = 'none';
     return;
   }
-  el.innerHTML = '<span class="sim-presets-label">테스트 케이스</span>' +
-    presets.map(k => {
-      const pr = PRESETS[k];
-      return `<button class="sim-preset-btn ${k===activeKey?'active':''}" data-preset="${k}" onclick="selectPreset('${k}')">${pr.icon} ${pr.label}</button>`;
-    }).join('');
+  selRow.style.display = 'flex';
+
+  selNet.innerHTML = sc.networks.map(n => {
+    const net = NETWORKS[n];
+    return `<option value="${n}" ${n===sc.defaultNetwork?'selected':''}>${net.icon} ${n} (chainId: ${net.chainId})</option>`;
+  }).join('');
+
+  // Populate tokens
+  updateTokenOptions(sc);
 }
 
-function selectPreset(key) {
+function updateTokenOptions(sc) {
+  const selNet = document.getElementById('selNetwork');
+  const selTok = document.getElementById('selToken');
+  const network = selNet.value;
+  const currentToken = selTok.value;
+
+  selTok.innerHTML = (sc || SCENARIOS[currentScenario]).tokens.map(t => {
+    const tok = TOKENS[t](network);
+    const label = t === 'Native' ? `${tok.symbol} (Native)` : t;
+    return `<option value="${t}" ${t===currentToken?'selected':''}>${label}</option>`;
+  }).join('');
+
+  // Select default if current token not available
+  if (!selTok.value && sc) {
+    selTok.value = sc.defaultToken || sc.tokens[0];
+  }
+
+  updateSelInfo();
+}
+
+function updateSelInfo() {
+  const network = document.getElementById('selNetwork').value;
+  const token = document.getElementById('selToken').value;
+  if (!network || !token) { document.getElementById('selInfo').innerHTML = ''; return; }
+  const p = buildPreset(network, token);
+  document.getElementById('selInfo').innerHTML =
+    `${NETWORKS[network].icon} <strong>${network}</strong> · ${p.symbol} · chainId: ${p.chainId} · decimals: ${p.decimals}` +
+    (p.tokenAddress ? ` · ${p.tokenAddress.slice(0,14)}...` : ' · (Native)');
+}
+
+function getSelectedPreset() {
+  const net = document.getElementById('selNetwork').value;
+  const tok = document.getElementById('selToken').value;
+  if (!net || !tok) return {};
+  return buildPreset(net, tok);
+}
+
+function onSelectorChange() {
   if (simRunning) return;
-  currentPreset = key;
-  document.querySelectorAll('.sim-preset-btn').forEach(b => b.classList.toggle('active', b.dataset.preset === key));
   const sc = SCENARIOS[currentScenario];
-  const p = PRESETS[key] || {};
-  renderScenarioContent(sc, p);
+  updateTokenOptions(sc);
+  renderScenarioContent(sc, getSelectedPreset());
 }
 
 function renderScenarioContent(sc, p) {
@@ -2165,10 +2226,14 @@ function loadScenario(key) {
   const btn = document.querySelector(`.sim-scenario-btn[onclick="loadScenario('${key}')"]`);
   if (btn) btn.classList.add('active');
   const sc = SCENARIOS[key];
-  currentPreset = sc.defaultPreset || (sc.presets && sc.presets[0]) || null;
-  renderPresets(sc.presets, currentPreset);
-  const p = (currentPreset && PRESETS[currentPreset]) || {};
-  renderScenarioContent(sc, p);
+  renderSelectors(sc);
+  // set defaults
+  const selNet = document.getElementById('selNetwork');
+  const selTok = document.getElementById('selToken');
+  if (sc.defaultNetwork) selNet.value = sc.defaultNetwork;
+  if (sc.defaultToken) selTok.value = sc.defaultToken;
+  updateTokenOptions(sc);
+  renderScenarioContent(sc, getSelectedPreset());
 }
 
 async function runSimulation() {
@@ -2177,7 +2242,7 @@ async function runSimulation() {
   const btn = document.getElementById('simRunBtn');
   btn.disabled = true; btn.textContent = '⏳ 실행 중...';
   const sc = SCENARIOS[currentScenario];
-  const p = (currentPreset && PRESETS[currentPreset]) || {};
+  const p = getSelectedPreset();
   const steps = sc.steps(p);
   const speed = parseInt(document.getElementById('simSpeed').value);
   document.getElementById('simSteps').innerHTML = steps.map(stepHtml).join('');
