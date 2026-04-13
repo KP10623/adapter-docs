@@ -435,6 +435,87 @@
     background: var(--danger-light); border-radius: 8px; border-left: 3px solid var(--danger);
   }
 
+  /* ── E2E Usecase Flow ── */
+  .e2e-flow {
+    display: flex; align-items: stretch; gap: 0; margin: 16px 0;
+    padding: 20px 16px; background: var(--gray-50); border-radius: var(--radius);
+    border: 1px solid var(--gray-200); overflow-x: auto;
+  }
+  .e2e-lane {
+    flex: 1; min-width: 160px; text-align: center; position: relative;
+    padding: 0 8px;
+  }
+  .e2e-lane-title {
+    font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+    padding: 6px 12px; border-radius: 6px; margin-bottom: 12px; display: inline-block;
+  }
+  .e2e-lane-title.app { background: #e0e7ff; color: #3730a3; }
+  .e2e-lane-title.wallet { background: #fef3c7; color: #92400e; }
+  .e2e-lane-title.adapter { background: var(--primary-light); color: var(--primary-dark); }
+  .e2e-lane-title.blockchain { background: var(--info-light); color: #5b21b6; }
+  .e2e-lane-title.external { background: var(--success-light); color: #166534; }
+
+  .e2e-item {
+    padding: 8px 10px; margin: 6px 0; border-radius: 8px;
+    font-size: 12px; font-weight: 600;
+    border: 1.5px solid; position: relative;
+  }
+  .e2e-item.app-item { background: #eef2ff; border-color: #a5b4fc; color: #3730a3; }
+  .e2e-item.wallet-item { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+  .e2e-item.adapter-item { background: #eff6ff; border-color: #93c5fd; color: var(--primary-dark); }
+  .e2e-item.chain-item { background: #f5f3ff; border-color: #c4b5fd; color: #5b21b6; }
+  .e2e-item.ext-item { background: #f0fdf4; border-color: #86efac; color: #166534; }
+  .e2e-item small { display: block; font-weight: 400; font-size: 10.5px; opacity: .7; margin-top: 2px; }
+
+  .e2e-arrow {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; flex-shrink: 0; color: var(--gray-400); font-size: 16px; font-weight: 700;
+  }
+  .e2e-arrow.down { writing-mode: vertical-rl; text-orientation: mixed; }
+
+  .e2e-divider {
+    width: 1px; background: var(--gray-300); margin: 0 4px; flex-shrink: 0;
+    align-self: stretch; position: relative;
+  }
+  .e2e-divider::before {
+    content: attr(data-label);
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-90deg);
+    font-size: 9px; color: var(--gray-400); white-space: nowrap; letter-spacing: .04em;
+    background: var(--gray-50); padding: 0 4px;
+  }
+
+  .e2e-note {
+    font-size: 11px; color: var(--gray-500); margin-top: 8px; padding: 8px 12px;
+    background: var(--warning-light); border-radius: 6px; border-left: 3px solid var(--warning);
+  }
+
+  .usecase-card {
+    background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius);
+    padding: 20px 24px; margin-bottom: 20px; box-shadow: var(--shadow);
+  }
+  .usecase-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--gray-100);
+  }
+  .usecase-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .usecase-title { font-size: 17px; font-weight: 800; color: var(--gray-900); }
+  .usecase-subtitle { font-size: 12px; color: var(--gray-500); font-weight: 400; }
+
+  .e2e-summary {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;
+    margin-top: 14px;
+  }
+  .e2e-summary-item {
+    padding: 10px 14px; border-radius: 8px; font-size: 12px;
+    border: 1px solid var(--gray-200); background: #fff;
+  }
+  .e2e-summary-item .label { font-size: 10px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: .04em; }
+  .e2e-summary-item .val { font-size: 13px; font-weight: 600; color: var(--gray-800); margin-top: 2px; }
+
   /* Mobile sim */
   @media (max-width: 900px) {
     .sim-left { display: none; }
@@ -465,6 +546,7 @@
     <a href="#architecture" class="nav-link">🏗️ 아키텍처</a>
     <a href="#tech-stack" class="nav-link">🛠️ 기술 스택</a>
     <a href="#overall-flow" class="nav-link">🔄 전체 플로우</a>
+    <a href="#e2e-usecase" class="nav-link">🗺️ E2E 유즈케이스 흐름</a>
   </div>
   <div class="nav-group">
     <div class="nav-group-title">핵심 기능</div>
@@ -640,6 +722,454 @@
       <div><strong>Graceful Shutdown:</strong> SIGINT/SIGTERM 수신 시 10초 타임아웃 내 순차 종료 (Outbox → Health → Kafka → WebSocket → DB → Logger)</div>
     </div>
   </div>
+</section>
+
+<!-- ============================================ -->
+<!-- E2E USECASE FLOW -->
+<!-- ============================================ -->
+<section class="section" id="e2e-usecase">
+  <h2 class="section-title"><span class="icon">🗺️</span> E2E 유즈케이스 흐름</h2>
+  <p class="section-desc">App(프론트) → Wallet BE → BC Adapter → Blockchain 전체 흐름을 유즈케이스별로 정리</p>
+
+  <div class="info-box tip">
+    <span class="icon">💡</span>
+    <div><strong>BC Adapter의 위치:</strong> App과 직접 통신하지 않습니다. Wallet BE가 Kafka를 통해 BC Adapter에 요청하고, BC Adapter는 블록체인과 직접 통신한 결과를 Kafka로 반환합니다.</div>
+  </div>
+
+  <!-- 1. 계정 생성 + 배포 -->
+  <div class="usecase-card">
+    <div class="usecase-header">
+      <div class="usecase-icon" style="background:#e0e7ff;">🆕</div>
+      <div>
+        <div class="usecase-title">1. 계정 생성 → 배포</div>
+        <div class="usecase-subtitle">사용자 가입 시 블록체인 지갑 주소를 생성하고 스마트 컨트랙트를 배포하는 흐름</div>
+      </div>
+    </div>
+    <div class="e2e-flow">
+      <div class="e2e-lane">
+        <div class="e2e-lane-title app">📱 App (Front)</div>
+        <div class="e2e-item app-item">회원가입 요청</div>
+      </div>
+      <div class="e2e-arrow">→</div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title wallet">🏢 Wallet BE</div>
+        <div class="e2e-item wallet-item">사용자 생성 처리</div>
+        <div class="e2e-item wallet-item">Kafka 발행<small>adapter.account.create</small></div>
+        <div class="e2e-item wallet-item" style="margin-top:24px;">주소 수신 & 저장</div>
+        <div class="e2e-item wallet-item">Kafka 발행<small>adapter.account.deploy</small></div>
+      </div>
+      <div class="e2e-divider" data-label="Kafka"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title adapter">⚙️ BC Adapter</div>
+        <div class="e2e-item adapter-item">CREATE2 주소 계산<small>salt = requestId</small></div>
+        <div class="e2e-item adapter-item">SQLite 저장<small>status: CREATED</small></div>
+        <div class="e2e-item adapter-item">Kafka 응답<small>adapter.account.created</small></div>
+        <div class="e2e-item adapter-item" style="margin-top:16px;">분산 락 → Nonce 조회</div>
+        <div class="e2e-item adapter-item">Bundler 배포 제출</div>
+        <div class="e2e-item adapter-item">Registry 폴링 확인</div>
+        <div class="e2e-item adapter-item">자동 집금 트리거<small>(비동기)</small></div>
+        <div class="e2e-item adapter-item">Kafka 응답<small>adapter.account.deployed</small></div>
+      </div>
+      <div class="e2e-divider" data-label="RPC/Bundler"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title blockchain">⛓️ Blockchain</div>
+        <div class="e2e-item chain-item">주소 계산<small>(오프체인, 온체인 X)</small></div>
+        <div class="e2e-item chain-item" style="margin-top:72px;">프록시 컨트랙트 배포<small>CREATE2 + EOFS</small></div>
+        <div class="e2e-item chain-item">Registry 등록 확인</div>
+      </div>
+    </div>
+    <div class="e2e-summary">
+      <div class="e2e-summary-item"><div class="label">요청 토픽</div><div class="val">adapter.account.create / deploy</div></div>
+      <div class="e2e-summary-item"><div class="label">응답 토픽</div><div class="val">adapter.account.created / deployed</div></div>
+      <div class="e2e-summary-item"><div class="label">동시성 제어</div><div class="val">Redis 분산 락 (배포 시)</div></div>
+      <div class="e2e-summary-item"><div class="label">후속 처리</div><div class="val">자동 집금 (비동기)</div></div>
+    </div>
+  </div>
+
+  <!-- 2. 입금 -->
+  <div class="usecase-card">
+    <div class="usecase-header">
+      <div class="usecase-icon" style="background:#dcfce7;">💰</div>
+      <div>
+        <div class="usecase-title">2. 입금 감지 → 알림</div>
+        <div class="usecase-subtitle">외부에서 사용자 지갑으로 토큰이 입금되면 실시간 감지하여 BE에 알리는 흐름</div>
+      </div>
+    </div>
+    <div class="e2e-flow">
+      <div class="e2e-lane">
+        <div class="e2e-lane-title external">🌐 외부</div>
+        <div class="e2e-item ext-item">사용자 주소로<br>토큰 전송</div>
+      </div>
+      <div class="e2e-arrow">→</div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title blockchain">⛓️ Blockchain</div>
+        <div class="e2e-item chain-item">트랜잭션 컨펌</div>
+        <div class="e2e-item chain-item">Deposit Listener가<br>이벤트 감지</div>
+      </div>
+      <div class="e2e-arrow">→</div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title adapter">⚙️ BC Adapter</div>
+        <div class="e2e-item adapter-item">WebSocket 수신<small>ws://host:8080/ws</small></div>
+        <div class="e2e-item adapter-item">Zod 검증 + 컨텍스트</div>
+        <div class="e2e-item adapter-item">Outbox 저장<small>at-least-once 보장</small></div>
+        <div class="e2e-item adapter-item">Kafka 발행<small>adapter.deposit.detected</small></div>
+        <div class="e2e-item adapter-item">자동 집금 트리거<small>(비동기, 에러 swallow)</small></div>
+      </div>
+      <div class="e2e-divider" data-label="Kafka"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title wallet">🏢 Wallet BE</div>
+        <div class="e2e-item wallet-item">입금 이벤트 수신</div>
+        <div class="e2e-item wallet-item">사용자 잔액 업데이트</div>
+        <div class="e2e-item wallet-item">Push 알림 전송</div>
+      </div>
+      <div class="e2e-arrow">→</div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title app">📱 App</div>
+        <div class="e2e-item app-item">입금 완료 알림</div>
+      </div>
+    </div>
+    <div class="e2e-note">⚡ 입금은 Kafka 요청이 아닌 <strong>WebSocket 이벤트 기반</strong>입니다. Deposit Listener(외부 서비스)가 블록체인 이벤트를 감지하여 BC Adapter로 전달합니다.</div>
+    <div class="e2e-summary">
+      <div class="e2e-summary-item"><div class="label">수신 방식</div><div class="val">WebSocket (ws://)</div></div>
+      <div class="e2e-summary-item"><div class="label">발행 토픽</div><div class="val">adapter.deposit.detected</div></div>
+      <div class="e2e-summary-item"><div class="label">메시지 보장</div><div class="val">Outbox 패턴 (at-least-once)</div></div>
+      <div class="e2e-summary-item"><div class="label">후속 처리</div><div class="val">자동 집금 → HotWallet</div></div>
+    </div>
+  </div>
+
+  <!-- 3. 출금 -->
+  <div class="usecase-card">
+    <div class="usecase-header">
+      <div class="usecase-icon" style="background:#fef3c7;">📤</div>
+      <div>
+        <div class="usecase-title">3. 출금</div>
+        <div class="usecase-subtitle">사용자가 외부 주소로 토큰을 전송 요청하면 블록체인에 트랜잭션을 제출하는 흐름</div>
+      </div>
+    </div>
+    <div class="e2e-flow">
+      <div class="e2e-lane">
+        <div class="e2e-lane-title app">📱 App</div>
+        <div class="e2e-item app-item">출금 요청<small>주소, 금액, 토큰</small></div>
+        <div class="e2e-item app-item" style="margin-top:80px;">결과 확인<small>(상태 폴링)</small></div>
+      </div>
+      <div class="e2e-arrow">→</div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title wallet">🏢 Wallet BE</div>
+        <div class="e2e-item wallet-item">출금 검증<small>잔액·한도·KYC</small></div>
+        <div class="e2e-item wallet-item">Kafka 발행<small>adapter.withdraw.request</small></div>
+        <div class="e2e-item wallet-item" style="margin-top:40px;">결과 수신<small>adapter.withdraw.result</small></div>
+        <div class="e2e-item wallet-item">Kafka 발행<small>adapter.common.confirm</small></div>
+        <div class="e2e-item wallet-item">컨펌 결과 수신<small>TXCF이면 확정</small></div>
+      </div>
+      <div class="e2e-divider" data-label="Kafka"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title adapter">⚙️ BC Adapter</div>
+        <div class="e2e-item adapter-item">Zod 검증</div>
+        <div class="e2e-item adapter-item">분산 락 획득<small>withdraw:nonce:{chainId}:{addr}</small></div>
+        <div class="e2e-item adapter-item">Pending Nonce 대기</div>
+        <div class="e2e-item adapter-item">Native/ERC-20 분기</div>
+        <div class="e2e-item adapter-item">Bundler UserOp 제출</div>
+        <div class="e2e-item adapter-item">Kafka 응답<small>status: TXPD</small></div>
+        <div class="e2e-item adapter-item" style="margin-top:8px;">Confirm 처리<small>receipt + blockNumber → TXCF</small></div>
+      </div>
+      <div class="e2e-divider" data-label="Bundler/RPC"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title blockchain">⛓️ Blockchain</div>
+        <div class="e2e-item chain-item">UserOp 실행<small>ERC-4337</small></div>
+        <div class="e2e-item chain-item">토큰 전송 처리</div>
+        <div class="e2e-item chain-item">블록 컨펌</div>
+      </div>
+    </div>
+    <div class="e2e-note">📌 출금 응답은 <strong>TXPD(제출됨)</strong>로 즉시 반환됩니다. 최종 확정은 Wallet BE가 별도로 <strong>adapter.common.confirm</strong>을 요청하여 TXCF 여부를 확인합니다.</div>
+    <div class="e2e-summary">
+      <div class="e2e-summary-item"><div class="label">요청 토픽</div><div class="val">adapter.withdraw.request</div></div>
+      <div class="e2e-summary-item"><div class="label">응답 토픽</div><div class="val">adapter.withdraw.result</div></div>
+      <div class="e2e-summary-item"><div class="label">Nonce 재시도</div><div class="val">1회 (100ms 대기)</div></div>
+      <div class="e2e-summary-item"><div class="label">최종 확정</div><div class="val">Confirm 별도 요청 → TXCF</div></div>
+    </div>
+  </div>
+
+  <!-- 4. 결제 -->
+  <div class="usecase-card">
+    <div class="usecase-header">
+      <div class="usecase-icon" style="background:#dbeafe;">💳</div>
+      <div>
+        <div class="usecase-title">4. 결제</div>
+        <div class="usecase-subtitle">가맹점 결제 시 HotWallet에서 Settlement 주소로 토큰을 전송하는 흐름</div>
+      </div>
+    </div>
+    <div class="e2e-flow">
+      <div class="e2e-lane">
+        <div class="e2e-lane-title app">📱 App</div>
+        <div class="e2e-item app-item">결제 요청<small>금액, 토큰</small></div>
+      </div>
+      <div class="e2e-arrow">→</div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title wallet">🏢 Wallet BE</div>
+        <div class="e2e-item wallet-item">결제 검증</div>
+        <div class="e2e-item wallet-item">Kafka 발행<small>adapter.payment.request</small></div>
+        <div class="e2e-item wallet-item" style="margin-top:32px;">결과 수신<small>adapter.payment.result</small></div>
+      </div>
+      <div class="e2e-divider" data-label="Kafka"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title adapter">⚙️ BC Adapter</div>
+        <div class="e2e-item adapter-item">토큰 정보 해석<small>DB → ENV → Default</small></div>
+        <div class="e2e-item adapter-item">분산 락 획득<small>withdraw:nonce: (출금과 공유)</small></div>
+        <div class="e2e-item adapter-item">HotWallet Nonce 조회</div>
+        <div class="e2e-item adapter-item">ERC-20 Transfer</div>
+        <div class="e2e-item adapter-item">Receipt 즉시 조회</div>
+        <div class="e2e-item adapter-item">Kafka 응답<small>status: TXCF</small></div>
+      </div>
+      <div class="e2e-divider" data-label="Bundler/RPC"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title blockchain">⛓️ Blockchain</div>
+        <div class="e2e-item chain-item">HotWallet →<br>Settlement 전송</div>
+      </div>
+    </div>
+    <div class="e2e-note">💡 결제는 출금과 다르게 <strong>Receipt 즉시 조회</strong>를 시도합니다. Receipt를 바로 받으면 TXCF, 못 받으면 TXPD로 반환합니다.</div>
+    <div class="e2e-summary">
+      <div class="e2e-summary-item"><div class="label">요청 토픽</div><div class="val">adapter.payment.request</div></div>
+      <div class="e2e-summary-item"><div class="label">응답 토픽</div><div class="val">adapter.payment.result</div></div>
+      <div class="e2e-summary-item"><div class="label">전송 주체</div><div class="val">HotWallet → Settlement</div></div>
+      <div class="e2e-summary-item"><div class="label">락 키 공유</div><div class="val">출금과 동일 (Nonce 충돌 방지)</div></div>
+    </div>
+  </div>
+
+  <!-- 5. 정산 -->
+  <div class="usecase-card">
+    <div class="usecase-header">
+      <div class="usecase-icon" style="background:#ede9fe;">🏦</div>
+      <div>
+        <div class="usecase-title">5. 정산 (EOFS Split)</div>
+        <div class="usecase-subtitle">Settlement 주소에서 가맹점+수수료 주소로 토큰을 동시 분배하는 흐름</div>
+      </div>
+    </div>
+    <div class="e2e-flow">
+      <div class="e2e-lane">
+        <div class="e2e-lane-title wallet">🏢 Wallet BE / 정산 시스템</div>
+        <div class="e2e-item wallet-item">정산 요청<small>가맹점, 금액, 수수료</small></div>
+        <div class="e2e-item wallet-item">Kafka 발행<small>adapter.settlement.request</small></div>
+        <div class="e2e-item wallet-item" style="margin-top:40px;">결과 수신</div>
+      </div>
+      <div class="e2e-divider" data-label="Kafka"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title adapter">⚙️ BC Adapter</div>
+        <div class="e2e-item adapter-item">토큰 정보 해석</div>
+        <div class="e2e-item adapter-item">분산 락 획득<small>settlement:nonce:{chainId}</small></div>
+        <div class="e2e-item adapter-item">payerNonce ethCall 조회</div>
+        <div class="e2e-item adapter-item">EOFS Split 실행<small>가맹점 + 수수료 동시 분배</small></div>
+        <div class="e2e-item adapter-item">On-chain 상세 조회</div>
+        <div class="e2e-item adapter-item">Kafka 응답<small>adapter.settlement.result</small></div>
+      </div>
+      <div class="e2e-divider" data-label="Bundler/RPC"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title blockchain">⛓️ Blockchain</div>
+        <div class="e2e-item chain-item">EOFS 프록시 실행</div>
+        <div class="e2e-item chain-item">가맹점 주소 입금</div>
+        <div class="e2e-item chain-item">수수료 주소 입금</div>
+      </div>
+    </div>
+    <div class="e2e-summary">
+      <div class="e2e-summary-item"><div class="label">요청 토픽</div><div class="val">adapter.settlement.request</div></div>
+      <div class="e2e-summary-item"><div class="label">분배 방식</div><div class="val">EOFS Split (1 tx = 2 전송)</div></div>
+      <div class="e2e-summary-item"><div class="label">Nonce</div><div class="val">payerNonce (ethCall) — 별도 관리</div></div>
+      <div class="e2e-summary-item"><div class="label">재시도</div><div class="val">EFS024 시 1회 (100ms 대기)</div></div>
+    </div>
+  </div>
+
+  <!-- 6. 잔액 조회 -->
+  <div class="usecase-card">
+    <div class="usecase-header">
+      <div class="usecase-icon" style="background:#dbeafe;">💎</div>
+      <div>
+        <div class="usecase-title">6. 잔액 조회</div>
+        <div class="usecase-subtitle">멀티 체인 × 멀티 토큰 잔액을 병렬로 조회하여 반환하는 흐름</div>
+      </div>
+    </div>
+    <div class="e2e-flow">
+      <div class="e2e-lane">
+        <div class="e2e-lane-title app">📱 App</div>
+        <div class="e2e-item app-item">잔액 조회 요청</div>
+      </div>
+      <div class="e2e-arrow">→</div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title wallet">🏢 Wallet BE</div>
+        <div class="e2e-item wallet-item">Kafka 발행<small>adapter.balance.inquiry</small></div>
+        <div class="e2e-item wallet-item" style="margin-top:20px;">잔액 결과 수신</div>
+      </div>
+      <div class="e2e-divider" data-label="Kafka"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title adapter">⚙️ BC Adapter</div>
+        <div class="e2e-item adapter-item">활성 체인/토큰 조회</div>
+        <div class="e2e-item adapter-item">병렬 RPC 호출<small>Native: eth_getBalance<br>ERC-20: ethCall(balanceOf)</small></div>
+        <div class="e2e-item adapter-item">결과 집계 & 응답<small>adapter.balance.result</small></div>
+      </div>
+      <div class="e2e-divider" data-label="RPC"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title blockchain">⛓️ Blockchain</div>
+        <div class="e2e-item chain-item">각 체인 RPC 응답</div>
+      </div>
+    </div>
+    <div class="e2e-summary">
+      <div class="e2e-summary-item"><div class="label">요청 토픽</div><div class="val">adapter.balance.inquiry</div></div>
+      <div class="e2e-summary-item"><div class="label">응답 토픽</div><div class="val">adapter.balance.result</div></div>
+      <div class="e2e-summary-item"><div class="label">조회 방식</div><div class="val">모든 체인×토큰 병렬 조회</div></div>
+      <div class="e2e-summary-item"><div class="label">동시성 제어</div><div class="val">없음 (읽기 전용)</div></div>
+    </div>
+  </div>
+
+  <!-- 7. 대사 -->
+  <div class="usecase-card">
+    <div class="usecase-header">
+      <div class="usecase-icon" style="background:#ede9fe;">📊</div>
+      <div>
+        <div class="usecase-title">7. 대사 (Reconciliation)</div>
+        <div class="usecase-subtitle">특정 시점 기준 온체인 잔액을 집계하여 대사 검증용 데이터를 생성하는 흐름</div>
+      </div>
+    </div>
+    <div class="e2e-flow">
+      <div class="e2e-lane">
+        <div class="e2e-lane-title wallet">🏢 정산/대사 시스템</div>
+        <div class="e2e-item wallet-item">대사 요청<small>기준 시점 (targetDt)</small></div>
+        <div class="e2e-item wallet-item">Kafka 발행<small>adapter.reconciliation.inquiry</small></div>
+        <div class="e2e-item wallet-item" style="margin-top:40px;">대사 결과 수신<small>심볼별 잔액 집계</small></div>
+      </div>
+      <div class="e2e-divider" data-label="Kafka"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title adapter">⚙️ BC Adapter (별도 Worker)</div>
+        <div class="e2e-item adapter-item">Binary Search<small>KST → Unix → 블록 번호</small></div>
+        <div class="e2e-item adapter-item">계정 목록 조회<small>deployed / undeployed</small></div>
+        <div class="e2e-item adapter-item">배치 잔액 조회<small>100개씩, blockTag 기준</small></div>
+        <div class="e2e-item adapter-item">심볼별 집계 & 응답</div>
+      </div>
+      <div class="e2e-divider" data-label="RPC"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title blockchain">⛓️ Blockchain</div>
+        <div class="e2e-item chain-item">point-in-time<br>잔액 반환<small>특정 블록 기준</small></div>
+      </div>
+    </div>
+    <div class="e2e-note">🔧 대사 Worker는 메인 Adapter와 <strong>독립 프로세스</strong>로 실행됩니다. Consumer Group: <strong>bc-reconcile</strong></div>
+    <div class="e2e-summary">
+      <div class="e2e-summary-item"><div class="label">Consumer Group</div><div class="val">bc-reconcile (독립)</div></div>
+      <div class="e2e-summary-item"><div class="label">시점 탐색</div><div class="val">Binary Search (블록 타임스탬프)</div></div>
+      <div class="e2e-summary-item"><div class="label">배치 크기</div><div class="val">100개 주소씩</div></div>
+      <div class="e2e-summary-item"><div class="label">집계 단위</div><div class="val">심볼별 (userOn / platformOn / reserveOn)</div></div>
+    </div>
+  </div>
+
+  <!-- 8. 집금 -->
+  <div class="usecase-card">
+    <div class="usecase-header">
+      <div class="usecase-icon" style="background:#fef3c7;">🧹</div>
+      <div>
+        <div class="usecase-title">8. 집금 (Collection)</div>
+        <div class="usecase-subtitle">사용자 지갑 → HotWallet로 토큰을 자동 수거하는 내부 흐름 (입금·배포 후 비동기 트리거)</div>
+      </div>
+    </div>
+    <div class="e2e-flow">
+      <div class="e2e-lane">
+        <div class="e2e-lane-title adapter">⚙️ BC Adapter (내부 트리거)</div>
+        <div class="e2e-item adapter-item">입금/배포 완료 후<br>비동기 호출</div>
+        <div class="e2e-item adapter-item">분산 락 획득<small>collection:{chainId}:{addr}</small></div>
+        <div class="e2e-item adapter-item">잔액 확인<small>0이면 스킵</small></div>
+        <div class="e2e-item adapter-item">approve + transferFrom<small>UserOp 2개 순차</small></div>
+        <div class="e2e-item adapter-item">실패 시 swallow<small>에러 로그만 기록</small></div>
+      </div>
+      <div class="e2e-divider" data-label="Bundler"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title blockchain">⛓️ Blockchain</div>
+        <div class="e2e-item chain-item">approve 실행</div>
+        <div class="e2e-item chain-item">transferFrom 실행<small>User → HotWallet</small></div>
+      </div>
+    </div>
+    <div class="e2e-note">🔇 집금은 <strong>Kafka 요청/응답 없이 내부적으로 실행</strong>됩니다. 실패해도 에러를 throw하지 않고 swallow하여 상위 흐름(입금/배포)에 영향을 주지 않습니다.</div>
+    <div class="e2e-summary">
+      <div class="e2e-summary-item"><div class="label">트리거</div><div class="val">입금 감지 / 계정 배포 완료</div></div>
+      <div class="e2e-summary-item"><div class="label">Kafka 토픽</div><div class="val">없음 (내부 처리)</div></div>
+      <div class="e2e-summary-item"><div class="label">UserOp 수</div><div class="val">2개 (approve → transferFrom)</div></div>
+      <div class="e2e-summary-item"><div class="label">에러 정책</div><div class="val">swallow (실패 무시)</div></div>
+    </div>
+  </div>
+
+  <!-- 9. 컨펌 -->
+  <div class="usecase-card">
+    <div class="usecase-header">
+      <div class="usecase-icon" style="background:#dbeafe;">✅</div>
+      <div>
+        <div class="usecase-title">9. 트랜잭션 컨펌</div>
+        <div class="usecase-subtitle">제출된 트랜잭션(TXPD)의 최종 확정 여부를 확인하는 흐름</div>
+      </div>
+    </div>
+    <div class="e2e-flow">
+      <div class="e2e-lane">
+        <div class="e2e-lane-title wallet">🏢 Wallet BE</div>
+        <div class="e2e-item wallet-item">TXPD 상태 TX 확인 요청</div>
+        <div class="e2e-item wallet-item">Kafka 발행<small>adapter.common.confirm</small></div>
+        <div class="e2e-item wallet-item" style="margin-top:20px;">결과 수신<small>TXPD / TXCF / TXFA</small></div>
+      </div>
+      <div class="e2e-divider" data-label="Kafka"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title adapter">⚙️ BC Adapter</div>
+        <div class="e2e-item adapter-item">Receipt 조회<small>getTransactionReceipt</small></div>
+        <div class="e2e-item adapter-item">Receipt 없으면<small>→ TXPD 유지</small></div>
+        <div class="e2e-item adapter-item">Receipt 있으면<small>Block Number 확인</small></div>
+        <div class="e2e-item adapter-item">latest - txBlock ≥ threshold<small>→ TXCF 확정</small></div>
+        <div class="e2e-item adapter-item">status=0 (revert)<small>→ TXFA 실패</small></div>
+        <div class="e2e-item adapter-item">Kafka 응답<small>adapter.common.confirmed</small></div>
+      </div>
+      <div class="e2e-divider" data-label="RPC"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title blockchain">⛓️ Blockchain</div>
+        <div class="e2e-item chain-item">Receipt + Block 반환</div>
+      </div>
+    </div>
+    <div class="e2e-note">💡 컨펌은 idempotent합니다. Wallet BE가 <strong>동일 txHash로 반복 요청</strong>하여 블록 확정을 확인할 수 있습니다.</div>
+    <div class="e2e-summary">
+      <div class="e2e-summary-item"><div class="label">요청 토픽</div><div class="val">adapter.common.confirm</div></div>
+      <div class="e2e-summary-item"><div class="label">응답 토픽</div><div class="val">adapter.common.confirmed</div></div>
+      <div class="e2e-summary-item"><div class="label">상태 변환</div><div class="val">TXPD → TXCF (확정) / TXFA (실패)</div></div>
+      <div class="e2e-summary-item"><div class="label">컨펌 기준</div><div class="val">latestBlock - txBlock ≥ 1</div></div>
+    </div>
+  </div>
+
+  <!-- 10. 설정 등록 -->
+  <div class="usecase-card">
+    <div class="usecase-header">
+      <div class="usecase-icon" style="background:#f3e8ff;">⚙️</div>
+      <div>
+        <div class="usecase-title">10. 설정 등록 (Config Register)</div>
+        <div class="usecase-subtitle">신규 체인/토큰 컨트랙트 정보를 BC Adapter에 등록하는 관리자 흐름</div>
+      </div>
+    </div>
+    <div class="e2e-flow">
+      <div class="e2e-lane">
+        <div class="e2e-lane-title wallet">🏢 Wallet BE / Admin</div>
+        <div class="e2e-item wallet-item">신규 토큰 등록 요청<small>chainId, contractAddress</small></div>
+        <div class="e2e-item wallet-item">Kafka 발행<small>adapter.config.register</small></div>
+        <div class="e2e-item wallet-item" style="margin-top:20px;">(응답 없음)</div>
+      </div>
+      <div class="e2e-divider" data-label="Kafka"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title adapter">⚙️ BC Adapter</div>
+        <div class="e2e-item adapter-item">RPC 호출<small>symbol(), decimals()</small></div>
+        <div class="e2e-item adapter-item">TokenConfig DB 저장<small>SQLite config.db</small></div>
+        <div class="e2e-item adapter-item">인메모리 캐시 갱신</div>
+      </div>
+      <div class="e2e-divider" data-label="RPC"></div>
+      <div class="e2e-lane">
+        <div class="e2e-lane-title blockchain">⛓️ Blockchain</div>
+        <div class="e2e-item chain-item">컨트랙트 메타 반환<small>symbol, decimals</small></div>
+      </div>
+    </div>
+    <div class="e2e-note">📌 설정 등록은 <strong>응답 토픽이 없는 Fire-and-Forget</strong> 패턴입니다. 등록 결과는 BC Adapter 로그에서만 확인할 수 있습니다.</div>
+    <div class="e2e-summary">
+      <div class="e2e-summary-item"><div class="label">요청 토픽</div><div class="val">adapter.config.register</div></div>
+      <div class="e2e-summary-item"><div class="label">응답 토픽</div><div class="val">없음 (NoReply)</div></div>
+      <div class="e2e-summary-item"><div class="label">저장소</div><div class="val">SQLite config.db + 인메모리</div></div>
+      <div class="e2e-summary-item"><div class="label">RPC 호출</div><div class="val">symbol() + decimals()</div></div>
+    </div>
+  </div>
+
 </section>
 
 <!-- ============================================ -->
